@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/radahn42/onetime-note/internal/dto"
+	"github.com/radahn42/onetime-note/internal/lib/validator"
 	"github.com/radahn42/onetime-note/internal/service"
 )
 
@@ -24,7 +25,12 @@ func (h *NoteHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := h.svc.Create(r.Context(), req.Content, req.TTLSeconds)
+	if err := validator.Struct(req); err != nil {
+		http.Error(w, "validation error: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	id, err := h.svc.Create(r.Context(), req.Content, *req.TTLSeconds)
 	if err != nil {
 		http.Error(w, "failed to create note", http.StatusInternalServerError)
 		return
@@ -34,6 +40,11 @@ func (h *NoteHandler) Create(w http.ResponseWriter, r *http.Request) {
 		ID:  id,
 		URL: "/api/notes/" + id,
 	}
+	if err := validator.Struct(resp); err != nil {
+		http.Error(w, "validation error: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	json.NewEncoder(w).Encode(resp)
 }
 
@@ -48,5 +59,10 @@ func (h *NoteHandler) Get(w http.ResponseWriter, r *http.Request) {
 	resp := dto.GetNoteResponse{
 		Content: content,
 	}
+	if err := validator.Struct(resp); err != nil {
+		http.Error(w, "validation error: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	json.NewEncoder(w).Encode(resp)
 }
