@@ -2,10 +2,11 @@ package handler
 
 import (
 	"encoding/json"
+	"net/http"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/radahn42/onetime-note/internal/dto"
 	"github.com/radahn42/onetime-note/internal/service"
-	"net/http"
 )
 
 type NoteHandler struct {
@@ -31,7 +32,7 @@ func (h *NoteHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	resp := dto.CreateNoteResponse{
 		ID:  id,
-		URL: "/api/note/" + id,
+		URL: "/api/notes/" + id,
 	}
 	json.NewEncoder(w).Encode(resp)
 }
